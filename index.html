@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Wishlist d'Audrey 🎂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,560;0,9..144,650;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  /* ============================================================
+     CONFIG — remplis ces 3 valeurs avec tes identifiants EmailJS
+     une fois que tu les as (Service ID / Template ID / Public Key)
+     ============================================================ */
+  :root {
+    --ink: #241830;
+    --plum: #2f1f47;
+    --plum-deep: #1a1128;
+    --coral: #ff7b54;
+    --gold: #ffbd6d;
+    --lilac: #b593e8;
+    --cream: #f8efe3;
+    --cream-dim: #cdbfd4;
+    --line: rgba(248,239,227,0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, .display {
+    font-family: 'Fraunces', serif;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    padding: 6rem 1.5rem 5rem;
+    text-align: center;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(181,147,232,0.35), transparent 70%),
+      radial-gradient(80% 60% at 20% 100%, rgba(255,123,84,0.28), transparent 70%),
+      radial-gradient(70% 50% at 85% 100%, rgba(255,189,109,0.22), transparent 70%),
+      linear-gradient(180deg, var(--ink) 0%, var(--plum) 55%, var(--plum-deep) 100%);
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 140px;
+    background: linear-gradient(0deg, var(--plum-deep), transparent);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+    margin-bottom: 1.1rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 4.4rem);
+    margin: 0 0 0.9rem;
+    color: var(--cream);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    background: linear-gradient(95deg, var(--coral), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p.sub {
+    max-width: 34rem;
+    margin: 0 auto 2.6rem;
+    color: var(--cream-dim);
+    font-size: 1.05rem;
+  }
+
+  /* countdown */
+  .countdown {
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .countdown .cell {
+    min-width: 74px;
+    padding: 0.9rem 0.4rem 0.7rem;
+    border-radius: 14px;
+    background: rgba(248,239,227,0.06);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+  }
+  .countdown .num {
+    font-family: 'Fraunces', serif;
+    font-size: 1.9rem;
+    font-weight: 650;
+    display: block;
+    color: var(--cream);
+  }
+  .countdown .label {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: var(--cream-dim);
+  }
+
+  /* ---------- LIST SECTION ---------- */
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 6rem;
+    background: var(--plum-deep);
+  }
+
+  .wrap h2 {
+    font-size: 1.7rem;
+    margin: 0 0 0.4rem;
+    color: var(--cream);
+  }
+  .wrap .lede {
+    color: var(--cream-dim);
+    margin: 0 0 2.6rem;
+    font-size: 0.95rem;
+  }
+
+  .gift {
+    display: grid;
+    grid-template-columns: 92px 1fr auto;
+    gap: 1.1rem;
+    align-items: center;
+    padding: 1.3rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .gift:last-child { border-bottom: 1px solid var(--line); }
+
+  .gift img {
+    width: 92px;
+    height: 92px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: rgba(248,239,227,0.08);
+  }
+
+  .gift .info h3 {
+    margin: 0 0 0.25rem;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.08rem;
+    color: var(--cream);
+  }
+  .gift.reserved .info h3 {
+    text-decoration: line-through;
+    color: var(--cream-dim);
+  }
+  .gift .info .meta {
+    font-size: 0.85rem;
+    color: var(--cream-dim);
+  }
+  .gift .info .meta a {
+    color: var(--lilac);
+    text-decoration: none;
+  }
+  .gift .info .meta a:hover { text-decoration: underline; }
+  .gift .info .price {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .btn-reserve {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(95deg, var(--coral), var(--gold));
+    color: #1a1128;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-reserve:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255,123,84,0.3);
+  }
+
+  .btn-reserve.is-reserved {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--cream-dim);
+    cursor: default;
+  }
+  .btn-reserve.is-reserved:hover { transform: none; box-shadow: none; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    text-align: center;
+    padding: 3rem 1.5rem 4rem;
+    background: var(--plum-deep);
+    color: var(--cream-dim);
+    font-size: 0.9rem;
+  }
+  footer .heart { color: var(--coral); }
+
+  /* ---------- MODAL ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,6,16,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    z-index: 50;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--plum);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 2rem;
+    max-width: 380px;
+    width: 100%;
+  }
+  .modal h3 {
+    font-family: 'Fraunces', serif;
+    margin: 0 0 0.3rem;
+    font-size: 1.3rem;
+  }
+  .modal p {
+    color: var(--cream-dim);
+    font-size: 0.88rem;
+    margin: 0 0 1.3rem;
+  }
+  .modal label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--cream-dim);
+    margin-bottom: 0.3rem;
+  }
+  .modal input {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: rgba(248,239,227,0.06);
+    color: var(--cream);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.92rem;
+  }
+  .modal input::placeholder { color: rgba(205,191,212,0.5); }
+  .modal-actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 0.4rem;
+  }
+  .modal-actions button {
+    flex: 1;
+    padding: 0.7rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    border: none;
+  }
+  .modal-actions .cancel {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--cream-dim);
+  }
+  .modal-actions .confirm {
+    background: linear-gradient(95deg, var(--coral), var(--gold));
+    color: #1a1128;
+  }
+  .modal-status {
+    font-size: 0.82rem;
+    margin-top: 0.8rem;
+    min-height: 1.1em;
+  }
+  .modal-status.error { color: var(--coral); }
+  .modal-status.ok { color: var(--gold); }
+
+  @media (max-width: 480px) {
+    .gift { grid-template-columns: 68px 1fr; }
+    .gift img { width: 68px; height: 68px; }
+    .btn-reserve { grid-column: 1 / -1; margin-top: 0.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <span class="eyebrow">31 octobre 2026</span>
+  <h1>La wishlist d'<em>Audrey</em></h1>
+  <p class="sub">Clique sur un cadeau pour le réserver — je recevrai un petit mot pour savoir qui offre quoi, et toi tu recevras une confirmation en retour 💌</p>
+  <div class="countdown" id="countdown">
+    <div class="cell"><span class="num" id="cd-days">–</span><span class="label">JOURS</span></div>
+    <div class="cell"><span class="num" id="cd-hours">–</span><span class="label">HEURES</span></div>
+    <div class="cell"><span class="num" id="cd-mins">–</span><span class="label">MIN</span></div>
+    <div class="cell"><span class="num" id="cd-secs">–</span><span class="label">SEC</span></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <h2>Les cadeaux</h2>
+  <p class="lede">La liste s'agrandit au fil du temps — reviens de temps en temps !</p>
+  <div id="gift-list"></div>
+</div>
+
+<footer>
+  Merci d'avance pour ta gentillesse <span class="heart">♥</span><br>
+  À très bientôt pour fêter ça ensemble.
+</footer>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3 id="modal-title">Réserver ce cadeau</h3>
+    <p>Entre ton prénom et ton email — tu recevras une confirmation, et c'est tout, promis.</p>
+    <label for="input-name">Ton prénom</label>
+    <input id="input-name" type="text" placeholder="Ex. Camille">
+    <label for="input-email">Ton email</label>
+    <input id="input-email" type="email" placeholder="toi@exemple.com">
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeModal()">Annuler</button>
+      <button class="confirm" onclick="confirmReservation()">Je réserve</button>
+    </div>
+    <div class="modal-status" id="modal-status"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG EMAILJS — à remplir dès que tu as créé ton compte
+   ============================================================ */
+const EMAILJS_PUBLIC_KEY  = "M0j8Hf_nvMt_qN6RW";
+const EMAILJS_SERVICE_ID  = "service_abc123";
+const EMAILJS_TEMPLATE_ID = "template_h3xoz1w";
+
+if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
+/* ============================================================
+   CONFIG STOCKAGE PARTAGÉ — pour que "Déjà réservé" s'affiche
+   chez TOUT LE MONDE (pas juste dans ton navigateur).
+   Étape 1 du prochain message : colle ton ID de bin ici.
+   ============================================================ */
+const JSONBIN_ID = "c9521fa53084";
+const JSONBIN_URL = "https://json.extendsclass.com/bin/" + JSONBIN_ID;
+const SHARED_STORAGE_READY = JSONBIN_ID.indexOf("COLLE_") === -1;
+
+/* ============================================================
+   LISTE DES CADEAUX
+   ============================================================ */
+const gifts = [
+  {
+    id: "collier-isa",
+    name: "Collier Isa Acier Jaune Cristal",
+    price: "35 €",
+    link: "https://www.histoiredor.com/fr_FR/p/collier-isa-acier-jaune-cristal/61270232895R00.html",
+    img: "https://www.histoiredor.com/dw/image/v2/BCQS_PRD/on/demandware.static/-/Sites-THOM_CATALOG/default/dw4db20235/images/61270232895-master_HO.jpg?sw=300&sh=300"
+  },
+  {
+    id: "robe-maille",
+    name: "Robe longue en maille (gris)",
+    price: "39,95 €",
+    link: "https://www.zara.com/fr/fr/robe-longue-en-maille-p02142156.html",
+    img: "https://static.zara.net/assets/public/ae75/c948/e15d40a99081/e51519ac64b7/02142156802-p/02142156802-p.jpg?w=300"
+  },
+  {
+    id: "sandales-noeud",
+    name: "Sandales à talons nœud métallisé (or)",
+    price: "39,95 €",
+    link: "https://www.zara.com/fr/fr/sandales-a-talons-n-ud-metallisees-p11307710.html",
+    img: "https://static.zara.net/assets/public/abd0/b3e0/7fe149bf8590/703d40cc24a1/11307710091-e1/11307710091-e1.jpg?w=300"
+  },
+  {
+    id: "talons-boucle",
+    name: "Talons à boucle métallique (noir)",
+    price: "39,95 €",
+    link: "https://www.zara.com/fr/fr/talons-boucle-metallique-p11239610.html",
+    img: "https://static.zara.net/assets/public/0d0b/be0e/ae544656a3b1/d7273213dc37/11239610800-e1/11239610800-e1.jpg?w=300"
+  },
+  {
+    id: "bottes-froncees",
+    name: "Bottes à talons froncées en croûte de cuir",
+    price: "79,95 €",
+    link: "https://www.zara.com/fr/fr/bottes-a-talons-froncees-en-croute-de-cuir-p13109810.html",
+    img: "https://static.zara.net/assets/public/d6aa/c46a/f00a42de9166/707bb2168741/13109810131-p/13109810131-p.jpg?w=300"
+  },
+  {
+    id: "linterdit",
+    name: "Givenchy L'Interdit — Eau de Parfum",
+    price: "≈ 46 €",
+    link: "https://www.parfumdreams.fr/GIVENCHY/Parfums-pour-femmes/LINTERDIT/Eau-de-Parfum-Spray/index_147365.aspx",
+    img: "https://cdn2.parfumdreams.de/image/product/147365-241197-0-0.webp"
+  }
+];
+
+let activeGiftId = null;
+
+function loadReservedLocal() {
+  try { return JSON.parse(localStorage.getItem("audrey-wishlist-reserved") || "{}"); }
+  catch (e) { return {}; }
+}
+function saveReservedLocal(data) {
+  localStorage.setItem("audrey-wishlist-reserved", JSON.stringify(data));
+}
+
+// Lit l'état partagé (visible par tout le monde) si configuré,
+// sinon retombe sur la copie locale de ce navigateur.
+async function fetchReserved() {
+  if (!SHARED_STORAGE_READY) return loadReservedLocal();
+  try {
+    const res = await fetch(JSONBIN_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("bin indisponible");
+    const data = await res.json();
+    saveReservedLocal(data);
+    return data;
+  } catch (e) {
+    return loadReservedLocal();
+  }
+}
+
+// Écrit l'état partagé pour que tous les visiteurs le voient.
+async function pushReserved(data) {
+  saveReservedLocal(data);
+  if (!SHARED_STORAGE_READY) return;
+  try {
+    await fetch(JSONBIN_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    // Pas grave : la réservation reste visible localement,
+    // elle se resynchronisera au prochain essai réussi.
+  }
+}
+
+async function renderGifts() {
+  const reserved = await fetchReserved();
+  const list = document.getElementById("gift-list");
+  list.innerHTML = "";
+  gifts.forEach(g => {
+    const isReserved = !!reserved[g.id];
+    const row = document.createElement("div");
+    row.className = "gift" + (isReserved ? " reserved" : "");
+    row.innerHTML = `
+      <img src="${g.img}" alt="${g.name}" loading="lazy">
+      <div class="info">
+        <h3>${g.name}</h3>
+        <div class="meta"><span class="price">${g.price}</span> · <a href="${g.link}" target="_blank" rel="noopener">Voir le produit</a></div>
+      </div>
+      <button class="btn-reserve ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="openModal('${g.id}')">
+        ${isReserved ? "Déjà réservé" : "Offrir"}
+      </button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function openModal(giftId) {
+  activeGiftId = giftId;
+  const gift = gifts.find(g => g.id === giftId);
+  document.getElementById("modal-title").textContent = `Réserver « ${gift.name} »`;
+  document.getElementById("input-name").value = "";
+  document.getElementById("input-email").value = "";
+  document.getElementById("modal-status").textContent = "";
+  document.getElementById("modal-status").className = "modal-status";
+  document.getElementById("modal-backdrop").classList.add("open");
+}
+function closeModal() {
+  document.getElementById("modal-backdrop").classList.remove("open");
+  activeGiftId = null;
+}
+
+async function confirmReservation() {
+  const name = document.getElementById("input-name").value.trim();
+  const email = document.getElementById("input-email").value.trim();
+  const status = document.getElementById("modal-status");
+  const gift = gifts.find(g => g.id === activeGiftId);
+
+  if (!name || !email) {
+    status.textContent = "Merci de remplir ton prénom et ton email.";
+    status.className = "modal-status error";
+    return;
+  }
+
+  status.textContent = "Un instant…";
+  status.className = "modal-status";
+
+  const reserved = await fetchReserved();
+  reserved[activeGiftId] = { name, email, date: new Date().toISOString() };
+  await pushReserved(reserved);
+
+  const emailConfigured = EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1;
+
+  if (emailConfigured && window.emailjs) {
+    status.textContent = "Envoi de l'email…";
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: email,
+      from_name: name,
+      gift_name: gift.name
+    }).then(() => {
+      status.textContent = "Merci ! Un email de confirmation t'a été envoyé 💌";
+      status.className = "modal-status ok";
+      renderGifts();
+      setTimeout(closeModal, 1600);
+    }).catch(() => {
+      status.textContent = "Réservé, mais l'email n'a pas pu partir. Réessaie plus tard.";
+      status.className = "modal-status error";
+      renderGifts();
+    });
+  } else {
+    status.textContent = "Réservé ! (email pas encore activé sur le site)";
+    status.className = "modal-status ok";
+    renderGifts();
+    setTimeout(closeModal, 1400);
+  }
+}
+
+/* ---------- Countdown ---------- */
+function updateCountdown() {
+  const target = new Date("2026-10-31T00:00:00");
+  const now = new Date();
+  let diff = target - now;
+  if (diff < 0) diff = 0;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / (1000 * 60)) % 60);
+  const secs = Math.floor((diff / 1000) % 60);
+  document.getElementById("cd-days").textContent = days;
+  document.getElementById("cd-hours").textContent = String(hours).padStart(2, "0");
+  document.getElementById("cd-mins").textContent = String(mins).padStart(2, "0");
+  document.getElementById("cd-secs").textContent = String(secs).padStart(2, "0");
+}
+
+renderGifts();
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
