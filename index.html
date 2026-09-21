@@ -15,7 +15,7 @@
      ============================================================ */
   :root {
     --ink: #241830;
-    --plum: #2f1f47:
+    --plum: #2f1f47;
     --plum-deep: #1a1128;
     --coral: #ff7b54;
     --gold: #ffbd6d;
@@ -331,6 +331,7 @@
 <footer>
   Merci d'avance pour ta gentillesse <span class="heart">♥</span><br>
   À très bientôt pour fêter ça ensemble.
+  <div id="sync-status" style="margin-top:1rem; font-size:0.72rem; opacity:0.6;"></div>
 </footer>
 
 <div class="modal-backdrop" id="modal-backdrop">
@@ -430,15 +431,20 @@ function saveReservedLocal(data) {
 
 // Lit l'état partagé (visible par tout le monde) si configuré,
 // sinon retombe sur la copie locale de ce navigateur.
+let lastSyncError = null;
+
 async function fetchReserved() {
   if (!SHARED_STORAGE_READY) return loadReservedLocal();
   try {
     const res = await fetch(JSONBIN_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("bin indisponible");
+    if (!res.ok) throw new Error("Lecture échouée (code " + res.status + ")");
     const data = await res.json();
     saveReservedLocal(data);
+    lastSyncError = null;
     return data;
   } catch (e) {
+    lastSyncError = e.message || String(e);
+    console.error("Erreur de lecture du stockage partagé :", e);
     return loadReservedLocal();
   }
 }
@@ -446,17 +452,38 @@ async function fetchReserved() {
 // Écrit l'état partagé pour que tous les visiteurs le voient.
 async function pushReserved(data) {
   saveReservedLocal(data);
-  if (!SHARED_STORAGE_READY) return;
+  if (!SHARED_STORAGE_READY) return true;
   try {
-    await fetch(JSONBIN_URL, {
+    const res = await fetch(JSONBIN_URL, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
+    if (!res.ok) throw new Error("Écriture échouée (code " + res.status + ")");
+    lastSyncError = null;
+    return true;
   } catch (e) {
+    lastSyncError = e.message || String(e);
+    console.error("Erreur d'écriture du stockage partagé :", e);
     // Pas grave : la réservation reste visible localement,
     // elle se resynchronisera au prochain essai réussi.
+    return false;
   }
+}
+
+// Petit indicateur discret en bas de page pour diagnostiquer
+// un souci de synchronisation sans avoir besoin des outils dev.
+async function checkSyncStatus() {
+  const el = document.getElementById("sync-status");
+  if (!el) return;
+  if (!SHARED_STORAGE_READY) {
+    el.textContent = "⚠️ Stockage partagé non configuré (mode local uniquement)";
+    return;
+  }
+  await fetchReserved();
+  el.textContent = lastSyncError
+    ? "⚠️ Stockage partagé indisponible : " + lastSyncError
+    : "";
 }
 
 async function renderGifts() {
@@ -513,7 +540,12 @@ async function confirmReservation() {
 
   const reserved = await fetchReserved();
   reserved[activeGiftId] = { name, email, date: new Date().toISOString() };
-  await pushReserved(reserved);
+  const synced = await pushReserved(reserved);
+
+  if (!synced) {
+    status.textContent = "Réservé sur cet appareil, mais pas encore visible pour les autres (" + lastSyncError + ")";
+    status.className = "modal-status error";
+  }
 
   const emailConfigured = EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1;
 
@@ -559,6 +591,7 @@ function updateCountdown() {
 
 renderGifts();
 updateCountdown();
+checkSyncStatus();
 setInterval(updateCountdown, 1000);
 </script>
 
