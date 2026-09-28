@@ -367,8 +367,9 @@ if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
    chez TOUT LE MONDE (pas juste dans ton navigateur).
    Étape 1 du prochain message : colle ton ID de bin ici.
    ============================================================ */
-const JSONBIN_ID = "c9521fa53084";
-const JSONBIN_URL = "https://json.extendsclass.com/bin/" + JSONBIN_ID;
+const JSONBIN_ID = "6abac3f0ffd5d1605338d38c";
+const JSONBIN_MASTER_KEY = "$2a$10$Qljrr9QBFntQil7lgHts6OCvWP9WZVSQeVCs0Rl0uaysn9FUqSwuW";
+const JSONBIN_BASE = "https://api.jsonbin.io/v3/b/" + JSONBIN_ID;
 const SHARED_STORAGE_READY = JSONBIN_ID.indexOf("COLLE_") === -1;
 
 /* ============================================================
@@ -436,9 +437,13 @@ let lastSyncError = null;
 async function fetchReserved() {
   if (!SHARED_STORAGE_READY) return loadReservedLocal();
   try {
-    const res = await fetch(JSONBIN_URL, { cache: "no-store" });
+    const res = await fetch(JSONBIN_BASE + "/latest", {
+      cache: "no-store",
+      headers: { "X-Master-Key": JSONBIN_MASTER_KEY }
+    });
     if (!res.ok) throw new Error("Lecture échouée (code " + res.status + ")");
-    const data = await res.json();
+    const payload = await res.json();
+    const data = (payload && payload.record) ? payload.record : {};
     saveReservedLocal(data);
     lastSyncError = null;
     return data;
@@ -454,9 +459,12 @@ async function pushReserved(data) {
   saveReservedLocal(data);
   if (!SHARED_STORAGE_READY) return true;
   try {
-    const res = await fetch(JSONBIN_URL, {
+    const res = await fetch(JSONBIN_BASE, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": JSONBIN_MASTER_KEY
+      },
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error("Écriture échouée (code " + res.status + ")");
@@ -473,14 +481,15 @@ async function pushReserved(data) {
 
 // Petit indicateur discret en bas de page pour diagnostiquer
 // un souci de synchronisation sans avoir besoin des outils dev.
-async function checkSyncStatus() {
+function checkSyncStatus() {
   const el = document.getElementById("sync-status");
   if (!el) return;
   if (!SHARED_STORAGE_READY) {
     el.textContent = "⚠️ Stockage partagé non configuré (mode local uniquement)";
     return;
   }
-  await fetchReserved();
+  // Réutilise le résultat du fetchReserved() déjà fait par renderGifts(),
+  // pas besoin d'un deuxième appel réseau.
   el.textContent = lastSyncError
     ? "⚠️ Stockage partagé indisponible : " + lastSyncError
     : "";
@@ -589,9 +598,8 @@ function updateCountdown() {
   document.getElementById("cd-secs").textContent = String(secs).padStart(2, "0");
 }
 
-renderGifts();
+renderGifts().then(checkSyncStatus);
 updateCountdown();
-checkSyncStatus();
 setInterval(updateCountdown, 1000);
 </script>
 
