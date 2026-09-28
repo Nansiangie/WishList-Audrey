@@ -147,10 +147,11 @@
     display: grid;
     grid-template-columns: 92px 1fr auto;
     gap: 1.1rem;
-    align-items: center;
+    align-items: start;
     padding: 1.3rem 0;
     border-top: 1px solid var(--line);
   }
+  .gift .gift-actions { padding-top: 0.2rem; }
   .gift:last-child { border-bottom: 1px solid var(--line); }
 
   .gift img {
@@ -181,9 +182,25 @@
     text-decoration: none;
   }
   .gift .info .meta a:hover { text-decoration: underline; }
-  .gift .info .price {
-    color: var(--gold);
-    font-weight: 500;
+
+  .gotcha-banner {
+    margin-top: 0.7rem;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: rgba(255,189,109,0.08);
+    border: 1px dashed var(--gold);
+    font-size: 0.8rem;
+    color: var(--cream-dim);
+  }
+  .gotcha-banner p { margin: 0 0 0.5rem; }
+  .gotcha-banner p:last-child { margin-bottom: 0; }
+  .gotcha-banner .gotcha-gift { color: var(--gold); font-weight: 600; }
+
+  .gift-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
   }
 
   .btn-reserve {
@@ -203,7 +220,6 @@
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(255,123,84,0.3);
   }
-
   .btn-reserve.is-reserved {
     background: transparent;
     border: 1px solid var(--line);
@@ -211,6 +227,75 @@
     cursor: default;
   }
   .btn-reserve.is-reserved:hover { transform: none; box-shadow: none; }
+
+  .btn-like {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(248,239,227,0.05);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
+  }
+  .btn-like:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(255,123,84,0.25);
+  }
+  .btn-like.is-reserved {
+    background: rgba(255,123,84,0.12);
+    border-color: transparent;
+    cursor: default;
+  }
+  .btn-like.is-reserved:hover { transform: none; box-shadow: none; }
+
+  /* ---------- ADMIN PANEL ---------- */
+  #admin-panel {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    background: #150c20;
+    border-bottom: 1px solid var(--line);
+  }
+  #admin-panel h2 {
+    font-size: 1.2rem;
+    margin: 0 0 1rem;
+    color: var(--gold);
+  }
+  .admin-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+  .admin-row .who {
+    color: var(--cream-dim);
+  }
+  .admin-row .who b { color: var(--cream); }
+  .admin-row button {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--coral);
+    background: transparent;
+    color: var(--coral);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .admin-row button:hover { background: rgba(255,123,84,0.12); }
+  #admin-panel .empty {
+    color: var(--cream-dim);
+    font-size: 0.85rem;
+    padding-top: 0.8rem;
+  }
 
   /* ---------- FOOTER ---------- */
   footer {
@@ -310,6 +395,11 @@
 </head>
 <body>
 
+<div id="admin-panel" style="display:none;">
+  <h2>🔐 Panneau d'Audrey — qui a réservé quoi</h2>
+  <div id="admin-list"></div>
+</div>
+
 <section class="hero">
   <span class="eyebrow">31 octobre 2026</span>
   <h1>La wishlist d'<em>Audrey</em></h1>
@@ -357,6 +447,7 @@
 const EMAILJS_PUBLIC_KEY  = "M0j8Hf_nvMt_qN6RW";
 const EMAILJS_SERVICE_ID  = "service_abc123";
 const EMAILJS_TEMPLATE_ID = "template_h3xoz1w";
+
 
 if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
   emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
@@ -495,26 +586,108 @@ function checkSyncStatus() {
     : "";
 }
 
+// Le texte du "piège" du cœur — même contenu que l'email de
+// remerciement, affiché en bannière permanente sur le site
+// (puisqu'on n'a pas d'email à qui l'envoyer, vu qu'on ne demande rien).
+const DELIVERY_ADDRESS = "NGASSA NANSI Ange Fortune Audrey<br>3 Avenue du Président Vincent Auriol<br>87000 Limoges<br>France";
+
+function trapBannerHTML(giftName) {
+  return `
+    <div class="gotcha-banner">
+      <p>Bonjour,</p>
+      <p>Merci beaucoup ! Tu viens de réserver le cadeau suivant pour l'anniversaire d'Audrey :</p>
+      <p class="gotcha-gift">🎁 ${giftName}</p>
+      <p>Voici l'adresse de livraison :<br>${DELIVERY_ADDRESS}</p>
+      <p>Hâte de fêter ça avec toi le 31 octobre !</p>
+      <p>À très bientôt,<br>Audrey</p>
+    </div>
+  `;
+}
+
 async function renderGifts() {
   const reserved = await fetchReserved();
   const list = document.getElementById("gift-list");
   list.innerHTML = "";
   gifts.forEach(g => {
-    const isReserved = !!reserved[g.id];
+    const entry = reserved[g.id];
+    const isReserved = !!entry;
+    const isTrapped = isReserved && entry.anonymous;
     const row = document.createElement("div");
     row.className = "gift" + (isReserved ? " reserved" : "");
     row.innerHTML = `
       <img src="${g.img}" alt="${g.name}" loading="lazy">
       <div class="info">
         <h3>${g.name}</h3>
-        <div class="meta"><span class="price">${g.price}</span> · <a href="${g.link}" target="_blank" rel="noopener">Voir le produit</a></div>
+        <div class="meta"><a href="${g.link}" target="_blank" rel="noopener">Voir le produit</a></div>
+        ${isTrapped ? trapBannerHTML(g.name) : ""}
       </div>
-      <button class="btn-reserve ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="openModal('${g.id}')">
-        ${isReserved ? "Déjà réservé" : "Offrir"}
-      </button>
+      <div class="gift-actions">
+        <button class="btn-like ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="quickReserve('${g.id}')" aria-label="cœur" title="❤️">
+          ${isReserved ? "💜" : "🤍"}
+        </button>
+        <button class="btn-reserve ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="openModal('${g.id}')">
+          ${isReserved ? "Déjà réservé" : "Offrir"}
+        </button>
+      </div>
     `;
     list.appendChild(row);
   });
+  renderAdminPanel(reserved);
+}
+
+/* ============================================================
+   PANNEAU ADMIN — visible uniquement via un lien secret
+   (?admin=CLE), pour qu'Audrey sache qui a réservé quoi et
+   puisse libérer un cadeau si quelqu'un annule oralement.
+   ============================================================ */
+const ADMIN_KEY = "audrey-secret-2026";
+const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
+
+function renderAdminPanel(reserved) {
+  const panel = document.getElementById("admin-panel");
+  if (!isAdmin) { panel.style.display = "none"; return; }
+  panel.style.display = "block";
+
+  const list = document.getElementById("admin-list");
+  const entries = Object.entries(reserved);
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty">Aucun cadeau réservé pour l\'instant.</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([giftId, info]) => {
+    const gift = gifts.find(g => g.id === giftId);
+    const label = gift ? gift.name : giftId;
+    const when = info.date ? new Date(info.date).toLocaleDateString("fr-FR") : "";
+    const who = info.anonymous
+      ? "réservé anonymement (via ❤️, sans nom indiqué)"
+      : `réservé par ${info.name} (${info.email})`;
+    return `
+      <div class="admin-row">
+        <div class="who"><b>${label}</b><br>${who} le ${when}</div>
+        <button onclick="releaseGift('${giftId}')">Libérer</button>
+      </div>
+    `;
+  }).join("");
+}
+
+async function releaseGift(giftId) {
+  if (!confirm("Annuler cette réservation et rendre le cadeau à nouveau disponible ?")) return;
+  const reserved = await fetchReserved();
+  delete reserved[giftId];
+  await pushReserved(reserved);
+  renderGifts();
+}
+
+// Le cœur est un piège 😄 : pas de fenêtre, pas de question.
+// Un clic réserve instantanément le cadeau, et une bannière
+// (même texte que l'email de remerciement) reste affichée en
+// permanence à côté de ce cadeau pour la personne qui a cliqué.
+async function quickReserve(giftId) {
+  const reserved = await fetchReserved();
+  if (reserved[giftId]) { renderGifts(); return; } // déjà pris entre-temps
+  reserved[giftId] = { anonymous: true, date: new Date().toISOString() };
+  await pushReserved(reserved);
+  renderGifts();
 }
 
 function openModal(giftId) {
