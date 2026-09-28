@@ -605,28 +605,29 @@ function trapBannerHTML(giftName) {
 }
 
 async function renderGifts() {
-  const reserved = await fetchReserved();
+  const reserved = await fetchReserved();   // vraies réservations, partagées par tous
+  const trapped = loadTrapped();            // piège du cœur, uniquement dans CE navigateur
   const list = document.getElementById("gift-list");
   list.innerHTML = "";
   gifts.forEach(g => {
-    const entry = reserved[g.id];
-    const isReserved = !!entry;
-    const isTrapped = isReserved && entry.anonymous;
+    const isReallyReserved = !!reserved[g.id];   // visible par tout le monde
+    const isTrappedHere = !!trapped[g.id];       // visible seulement ici
+
     const row = document.createElement("div");
-    row.className = "gift" + (isReserved ? " reserved" : "");
+    row.className = "gift" + (isReallyReserved ? " reserved" : "");
     row.innerHTML = `
       <img src="${g.img}" alt="${g.name}" loading="lazy">
       <div class="info">
         <h3>${g.name}</h3>
         <div class="meta"><a href="${g.link}" target="_blank" rel="noopener">Voir le produit</a></div>
-        ${isTrapped ? trapBannerHTML(g.name) : ""}
+        ${isTrappedHere ? trapBannerHTML(g.name) : ""}
       </div>
       <div class="gift-actions">
-        <button class="btn-like ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="quickReserve('${g.id}')" aria-label="cœur" title="❤️">
-          ${isReserved ? "💜" : "🤍"}
+        <button class="btn-like ${isTrappedHere ? "is-reserved" : ""}" ${isTrappedHere ? "disabled" : ""} onclick="quickReserve('${g.id}')" aria-label="cœur" title="❤️">
+          ${isTrappedHere ? "💜" : "🤍"}
         </button>
-        <button class="btn-reserve ${isReserved ? "is-reserved" : ""}" ${isReserved ? "disabled" : ""} onclick="openModal('${g.id}')">
-          ${isReserved ? "Déjà réservé" : "Offrir"}
+        <button class="btn-reserve ${isReallyReserved ? "is-reserved" : ""}" ${isReallyReserved ? "disabled" : ""} onclick="openModal('${g.id}')">
+          ${isReallyReserved ? "Déjà réservé" : "Offrir"}
         </button>
       </div>
     `;
@@ -678,15 +679,22 @@ async function releaseGift(giftId) {
   renderGifts();
 }
 
-// Le cœur est un piège 😄 : pas de fenêtre, pas de question.
-// Un clic réserve instantanément le cadeau, et une bannière
-// (même texte que l'email de remerciement) reste affichée en
-// permanence à côté de ce cadeau pour la personne qui a cliqué.
-async function quickReserve(giftId) {
-  const reserved = await fetchReserved();
-  if (reserved[giftId]) { renderGifts(); return; } // déjà pris entre-temps
-  reserved[giftId] = { anonymous: true, date: new Date().toISOString() };
-  await pushReserved(reserved);
+// Le cœur est un piège 100% personnel 😄 : il ne touche jamais au
+// stockage partagé. Seule la personne qui clique voit le cadeau
+// grisé et la bannière chez elle — pour tous les autres visiteurs,
+// rien ne change, le cadeau reste disponible normalement.
+function loadTrapped() {
+  try { return JSON.parse(localStorage.getItem("audrey-wishlist-trapped") || "{}"); }
+  catch (e) { return {}; }
+}
+function saveTrapped(data) {
+  localStorage.setItem("audrey-wishlist-trapped", JSON.stringify(data));
+}
+
+function quickReserve(giftId) {
+  const trapped = loadTrapped();
+  trapped[giftId] = true;
+  saveTrapped(trapped);
   renderGifts();
 }
 
