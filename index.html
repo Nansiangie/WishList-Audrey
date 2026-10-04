@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,560;0,9..144,650;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
 <style>
   /* ============================================================
      CONFIG — remplis ces 3 valeurs avec tes identifiants EmailJS
@@ -449,9 +449,11 @@ const EMAILJS_SERVICE_ID  = "service_abc123";
 const EMAILJS_TEMPLATE_ID = "template_h3xoz1w";
 
 
-if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
-  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-}
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  }
+});
 
 /* ============================================================
    CONFIG STOCKAGE PARTAGÉ — pour que "Déjà réservé" s'affiche
