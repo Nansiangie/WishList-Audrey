@@ -829,11 +829,15 @@ async function confirmReservation() {
       status.className = "modal-status ok";
       renderGifts();
       setTimeout(closeModal, 1600);
-    }).catch(() => {
-      status.textContent = "Réservé, mais l'email n'a pas pu partir. Réessaie plus tard.";
+       
+    }).catch((err) => {
+      const detail = (err && (err.text || err.message)) ? (err.text || err.message) : JSON.stringify(err);
+      status.textContent = "Réservé, mais l'email n'a pas pu partir : " + detail;
       status.className = "modal-status error";
+      console.error("Erreur EmailJS :", err);
       renderGifts();
     });
+
   } else {
     status.textContent = "Réservé ! (email pas encore activé sur le site)";
     status.className = "modal-status ok";
