@@ -183,6 +183,24 @@
   }
   .gift .info .meta a:hover { text-decoration: underline; }
 
+  .new-badge {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: linear-gradient(95deg, var(--coral), var(--gold));
+    color: #1a1128;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  .gift-note {
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+
   .gotcha-banner {
     margin-top: 0.7rem;
     padding: 0.9rem 1rem;
@@ -449,6 +467,9 @@ const EMAILJS_SERVICE_ID  = "service_abc123";
 const EMAILJS_TEMPLATE_ID = "template_h3xoz1w";
 
 
+// Le script EmailJS est chargé en "defer" pour ne jamais bloquer
+// l'affichage de la page (même si le CDN est lent ou injoignable
+// sur certains réseaux mobiles). On attend donc qu'il soit prêt.
 document.addEventListener("DOMContentLoaded", function () {
   if (window.emailjs && EMAILJS_PUBLIC_KEY.indexOf("COLLE_") === -1) {
     emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
@@ -468,20 +489,74 @@ const SHARED_STORAGE_READY = JSONBIN_ID.indexOf("COLLE_") === -1;
 /* ============================================================
    LISTE DES CADEAUX
    ============================================================ */
+// Petite icône générique pour le cadeau "Claude Pro" (dessinée ici, aucune image externe)
+const PRO_ICON = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 92 92'>" +
+  "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
+  "<stop offset='0' stop-color='#ff7b54'/><stop offset='1' stop-color='#ffbd6d'/></linearGradient></defs>" +
+  "<rect width='92' height='92' rx='14' fill='url(#g)'/>" +
+  "<text x='46' y='50' text-anchor='middle' font-family='Georgia, serif' font-size='32' font-weight='bold' fill='#1a1128'>Pro</text>" +
+  "<text x='46' y='70' text-anchor='middle' font-family='Arial, sans-serif' font-size='11' fill='#1a1128'>12 mois</text>" +
+  "</svg>"
+);
+
 const gifts = [
+  {
+    id: "claude-pro-annuel",
+    isNew: true,
+    name: "Abonnement annuel Claude Pro (cadeau 12 mois)",
+    note: "À envoyer à : angienansi2@gmail.com",
+    link: "https://claude.ai/gift",
+    img: PRO_ICON
+  },
+  {
+    id: "ny-manteau-ceinture",
+    isNew: true,
+    name: "Manteau avec ceinture (brun foncé)",
+    link: "https://s.newyorker.de/kPWT",
+    img: "https://api.newyorker.de/csp/images/image/public/12bd5b7bbaa1004e40520b1a66d9e962.png"
+  },
+  {
+    id: "ny-bottines-brun",
+    isNew: true,
+    name: "Bottines (brun foncé)",
+    link: "https://s.newyorker.de/ktJt",
+    img: "https://api.newyorker.de/csp/images/image/public/c4f8ab8a908f5ba7fbf0e564916511f9.png"
+  },
+  {
+    id: "ny-bottes-noir",
+    isNew: true,
+    name: "Bottes (noir)",
+    link: "https://s.newyorker.de/kRjp",
+    img: "https://api.newyorker.de/csp/images/image/public/86409bb1653d93d9a2bf320431a35ad5.png"
+  },
+  {
+    id: "temu-1",
+    isNew: true,
+    name: "Bottes à talons (noir)",
+    link: "https://share.temu.com/VlE3MIJpxlB",
+    img: "https://img.kwcdn.com/product/open/b78a245036c141a5b1dccd9869c829e7-goods.jpeg?imageMogr2/thumbnail/800x9999%3E/quality/70/format/avif"
+  },
+  {
+    id: "temu-2",
+    isNew: true,
+    name: "Robe marron gris",
+    link: "https://share.temu.com/bEWlpFZMQXB",
+    img: "https://img.kwcdn.com/product/fancy/490826c8-ada1-4ae6-ba38-dad772f3700e.jpg?imageMogr2/thumbnail/800x9999%3E/quality/70/format/avif"
+  },
+  {
+    id: "temu-3",
+    isNew: true,
+    name: "Bottes à fourrure (noir)",
+    link: "https://share.temu.com/AUpvxoqHk4B",
+    img: "https://img.kwcdn.com/product/fancy/fef9211d-073b-4a38-bcc5-bf7e3f353f87.jpg?imageMogr2/thumbnail/800x9999%3E/quality/70/format/avif"
+  },
   {
     id: "collier-isa",
     name: "Collier Isa Acier Jaune Cristal",
     price: "35 €",
     link: "https://www.histoiredor.com/fr_FR/p/collier-isa-acier-jaune-cristal/61270232895R00.html",
     img: "https://www.histoiredor.com/dw/image/v2/BCQS_PRD/on/demandware.static/-/Sites-THOM_CATALOG/default/dw4db20235/images/61270232895-master_HO.jpg?sw=300&sh=300"
-  },
-  {
-    id: "robe-maille",
-    name: "Robe longue en maille (gris)",
-    price: "39,95 €",
-    link: "https://www.zara.com/fr/fr/robe-longue-en-maille-p02142156.html",
-    img: "https://static.zara.net/assets/public/ae75/c948/e15d40a99081/e51519ac64b7/02142156802-p/02142156802-p.jpg?w=300"
   },
   {
     id: "sandales-noeud",
@@ -496,13 +571,6 @@ const gifts = [
     price: "39,95 €",
     link: "https://www.zara.com/fr/fr/talons-boucle-metallique-p11239610.html",
     img: "https://static.zara.net/assets/public/0d0b/be0e/ae544656a3b1/d7273213dc37/11239610800-e1/11239610800-e1.jpg?w=300"
-  },
-  {
-    id: "bottes-froncees",
-    name: "Bottes à talons froncées en croûte de cuir",
-    price: "79,95 €",
-    link: "https://www.zara.com/fr/fr/bottes-a-talons-froncees-en-croute-de-cuir-p13109810.html",
-    img: "https://static.zara.net/assets/public/d6aa/c46a/f00a42de9166/707bb2168741/13109810131-p/13109810131-p.jpg?w=300"
   },
   {
     id: "linterdit",
@@ -523,7 +591,7 @@ const gifts = [
     name: "Dr. Ceuracle — Vegan Kombucha Beginning Set",
     price: "20,95 €",
     link: "https://koreanskincare.nl/products/dr-ceuracle-vegan-kombucha-beginning-set",
-    img: "https://koreanskincare.nl/cdn/shop/files/Product-page-sizes_4813db16-3c54-4675-8901-396e483ac61f.jpg"
+    img: ""
   },
   {
     id: "prixton-appareil-photo",
@@ -697,7 +765,9 @@ async function renderGifts() {
     row.innerHTML = `
       <img src="${g.img}" alt="${g.name}" loading="lazy" onerror="this.style.visibility='hidden'">
       <div class="info">
+        ${g.isNew && !isReallyReserved ? '<span class="new-badge">✨ Nouveau</span>' : ""}
         <h3>${g.name}</h3>
+        ${g.note ? '<div class="gift-note">' + g.note + '</div>' : ""}
         <div class="meta"><a href="${g.link}" target="_blank" rel="noopener">Voir le produit</a></div>
         ${isTrappedHere ? trapBannerHTML(g.name) : ""}
       </div>
@@ -829,7 +899,6 @@ async function confirmReservation() {
       status.className = "modal-status ok";
       renderGifts();
       setTimeout(closeModal, 1600);
-       
     }).catch((err) => {
       const detail = (err && (err.text || err.message)) ? (err.text || err.message) : JSON.stringify(err);
       status.textContent = "Réservé, mais l'email n'a pas pu partir : " + detail;
@@ -837,7 +906,6 @@ async function confirmReservation() {
       console.error("Erreur EmailJS :", err);
       renderGifts();
     });
-
   } else {
     status.textContent = "Réservé ! (email pas encore activé sur le site)";
     status.className = "modal-status ok";
